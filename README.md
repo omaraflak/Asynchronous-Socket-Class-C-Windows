@@ -6,10 +6,9 @@ Native socket implementation in C++ is... how to say... A TOTAL BRAINF***
 If you never tryed to use them, don't try now!
 
 # Callback Pattern
-The SocketClient class implements a callback pattern which is very usefull to handle message and catch errors easily.
+The SocketClient class implements a callback pattern which is very usefull to handle messages and catch errors easily.
 
-For those who don't know: A callback is a function called a specific event happen in the system. In this case, the callback will be used 
-for handling incoming messages through the socket. It means you don't have to care about receiving messages, you are automatically 
+For those who don't know: A callback is a function called when a specific event happen in the system. In this case, the callback will be called for every incoming message through the socket. You don't have to care about receiving messages, you are automatically 
 alerted when you receive something.
 
 # Sample
