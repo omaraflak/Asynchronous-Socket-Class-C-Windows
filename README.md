@@ -3,7 +3,7 @@ SocketClient allows easy communication between sockets and implement a callback 
 
 # Why
 Native socket implementation in C++ is... how to say... A TOTAL BRAINF***
-If you never tryed to use them, don't start now!
+If you never tryed to use them, don't try now!
 
 # Callback Pattern
 The SocketClient class implements a callback pattern which is very usefull to handle message and catch errors easily.
