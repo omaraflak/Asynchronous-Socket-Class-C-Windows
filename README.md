@@ -18,4 +18,5 @@ I made a simple Server/Client connection for the example: The Client connects to
 The Server implements the callback functions and displays the messages.
 
 Server: https://github.com/omaflak/Asynchronous-Socket-Class-C-Windows/blob/master/main_server.cpp
+
 Client: https://github.com/omaflak/Asynchronous-Socket-Class-C-Windows/blob/master/main_client.cpp
