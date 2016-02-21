@@ -21,5 +21,5 @@ Client: https://github.com/omaflak/Asynchronous-Socket-Class-C-Windows/blob/mast
 
 ## Compliation under Windows
 
-    g++ main_client.cpp -o client.exe path\to\SocketClient.a path\to\MinGW\lib\libws2_32.a
-    g++ main_server.cpp -o server.exe path\to\SocketServer.a path\to\SocketClient.a path\to\MinGW\lib\libws2_32.a
+    g++ main_client.cpp -o client.exe path\to\libSocket.a path\to\MinGW\lib\libws2_32.a
+    g++ main_server.cpp -o server.exe path\to\libSocket.a path\to\MinGW\lib\libws2_32.a
