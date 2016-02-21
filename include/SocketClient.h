@@ -15,7 +15,7 @@ class SocketClient
         SocketClient(SOCKET socket);
         SocketClient();
 
-        void connect();
+        int connect();
         void close();
         void send(std::string message);
         std::string receive();

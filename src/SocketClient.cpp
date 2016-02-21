@@ -34,9 +34,18 @@ void SocketClient::initParameters()
     this->thread_started=false;
 }
 
-void SocketClient::connect()
+int SocketClient::connect()
 {
-    WINSOCK_API_LINKAGE::connect(socket, (SOCKADDR *)&addr, sizeof(addr));
+    int r = WINSOCK_API_LINKAGE::connect(socket, (SOCKADDR *)&addr, sizeof(addr));
+    if(r==-1)
+    {
+        if(callbackError!=NULL)
+        {
+            errorStruct error(*this, r, "Could not connect to server.");
+            callbackError(&error);
+        }
+    }
+    return r;
 }
 
 void SocketClient::close()
