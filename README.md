@@ -24,3 +24,7 @@ Client: https://github.com/omaflak/Asynchronous-Socket-Class-C-Windows/blob/mast
     g++ main_server.cpp -o server.exe libSocket.a "C:\path\to\lib\libws2_32.a"
 
 SocketClient.h and SocketServer.h must be with your .cpp file, in the same folder.
+
+# Tutorial
+
+For more explanations about the installation, please visit my website: https://causeyourestuck.io/2016/02/21/socket-library-c/
