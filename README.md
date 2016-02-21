@@ -17,3 +17,8 @@ The Server implements the callback functions and displays the messages.
 Server: https://github.com/omaflak/Asynchronous-Socket-Class-C-Windows/blob/master/main_server.cpp
 
 Client: https://github.com/omaflak/Asynchronous-Socket-Class-C-Windows/blob/master/main_client.cpp
+
+# Compilation under Windows
+
+    g++ main_client.cpp -o client.exe libSocket.a "C:\path\to\lib\libws2_32.a"
+    g++ main_server.cpp -o server.exe libSocket.a "C:\path\to\lib\libws2_32.a"
