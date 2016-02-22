@@ -39,11 +39,11 @@ void SocketClient::initParameters()
 int SocketClient::connect()
 {
     int r = WINSOCK_API_LINKAGE::connect(socket, (SOCKADDR *)&addr, sizeof(addr));
-    if(r==-1)
+    if(r==SOCKET_ERROR)
     {
         if(callbackError!=NULL)
         {
-            errorStruct error(*this, r, "Could not connect to server.");
+            errorStruct error(*this, WSAGetLastError(), "Error while connecting.");
             callbackError(&error);
         }
     }
@@ -59,6 +59,7 @@ void SocketClient::close()
         removeMessageCallback();
     removeErrorCallback();
     WINSOCK_API_LINKAGE::closesocket(socket);
+    WSACleanup();
 }
 
 void SocketClient::send(std::string message)
@@ -72,7 +73,15 @@ void SocketClient::send(std::string message)
         str="0"+str;
     }
     message=str+message;
-    WINSOCK_API_LINKAGE::send(socket, message.c_str(), message.length(), 0);
+    int r = WINSOCK_API_LINKAGE::send(socket, message.c_str(), message.length(), 0);
+    if(r==SOCKET_ERROR)
+    {
+        if(callbackError!=NULL)
+        {
+            errorStruct error(*this, WSAGetLastError(), "Error while sending.");
+            callbackError(&error);
+        }
+    }
 }
 
 std::string SocketClient::receive()
@@ -80,13 +89,8 @@ std::string SocketClient::receive()
     char buffer[bytes_for_package_size];
     int result = WINSOCK_API_LINKAGE::recv(socket, buffer, sizeof(buffer), 0);
 
-    if(result<0 || result==0){
-        errorStruct error(*this, WSAGetLastError(), "Connection closed.");
-        isConnected=false;
-        if(callbackError!=NULL)
-            callbackError(&error);
-        return "";
-    }
+    if(errorReceiving(result))
+        return "NULL";
 
     std::string messageSize(buffer, bytes_for_package_size);
     std::stringstream ss;
@@ -99,7 +103,11 @@ std::string SocketClient::receive()
     for (unsigned int i=0 ; i<n/size_of_received_buffer ; i++)
     {
         char* buff = new char[size_of_received_buffer]();
-        WINSOCK_API_LINKAGE::recv(socket, buff, size_of_received_buffer, 0);
+        int result = WINSOCK_API_LINKAGE::recv(socket, buff, size_of_received_buffer, 0);
+
+            if(errorReceiving(result))
+        return "NULL";
+
         std::string str(buff, size_of_received_buffer);
         message+=str;
         delete[] buff;
@@ -109,13 +117,31 @@ std::string SocketClient::receive()
     {
         int p=n%size_of_received_buffer;
         char* buff = new char[p]();
-        WINSOCK_API_LINKAGE::recv(socket, buff, p, 0);
+        int result = WINSOCK_API_LINKAGE::recv(socket, buff, p, 0);
+
+            if(errorReceiving(result))
+        return "NULL";
+
         std::string str(buff, p);
         message+=str;
         delete[] buff;
     }
 
     return message;
+}
+
+bool SocketClient::errorReceiving(int result)
+{
+    if(result==0 || result<0)
+    {
+        errorStruct error(*this, WSAGetLastError(), "Receive failed.");
+        if(callbackError!=NULL)
+            callbackError(&error);
+
+        isConnected=false;
+        return true;
+    }
+    return false;
 }
 
 void SocketClient::setSize_of_received_buffer(unsigned int n)

@@ -39,6 +39,7 @@ class SocketClient
         bool thread_started;
         void (*callback)(messageStruct *);
         void (*callbackError)(errorStruct *);
+        bool errorReceiving(int result);
         void initSocket(std::string ip, int port);
         void initParameters();
         void startThread();
