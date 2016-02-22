@@ -4,6 +4,7 @@ SocketClient::SocketClient(std::string ip, int port)
 {
     this->ip=ip;
     this->port=port;
+    this->isConnected=false;
     initParameters();
     initSocket(ip, port);
 }
@@ -11,6 +12,7 @@ SocketClient::SocketClient(std::string ip, int port)
 SocketClient::SocketClient(SOCKET socket)
 {
     this->socket=socket;
+    this->isConnected=true;
     initParameters();
 }
 
@@ -45,6 +47,9 @@ int SocketClient::connect()
             callbackError(&error);
         }
     }
+    else
+        isConnected=true;
+
     return r;
 }
 
@@ -77,6 +82,7 @@ std::string SocketClient::receive()
 
     if(result<0 || result==0){
         errorStruct error(*this, WSAGetLastError(), "Connection closed.");
+        isConnected=false;
         if(callbackError!=NULL)
             callbackError(&error);
         return "";
@@ -150,8 +156,11 @@ void SocketClient::startThread()
 {
     while(1)
     {
-        std::string message = this->receive();
-        messageStruct m(*this, message);
-        callback(&m);
+        if(isConnected)
+        {
+            std::string message = this->receive();
+            messageStruct m(*this, message);
+            callback(&m);
+        }
     }
 }

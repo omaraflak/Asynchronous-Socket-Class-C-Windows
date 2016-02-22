@@ -31,6 +31,7 @@ class SocketClient
         std::string ip;
         unsigned int bytes_for_package_size;
         unsigned int size_of_received_buffer;
+        bool isConnected;
         WSADATA WSAData;
         SOCKET socket;
         SOCKADDR_IN addr;
