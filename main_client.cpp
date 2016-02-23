@@ -1,5 +1,4 @@
 #include <iostream>
-#include <winsock2.h>
 #include "SocketClient.h"
 
 using namespace std;
