@@ -29,11 +29,12 @@ void SocketClient::initSocket(std::string ip, int port)
 
 void SocketClient::initParameters()
 {
-    this->bytes_for_package_size=10;
+    this->bytes_for_package_size=64;
     this->size_of_received_buffer=2048;
     this->callback=NULL;
     this->callbackError=NULL;
     this->thread_started=false;
+    this->errorWhileReceiving=false;
 }
 
 int SocketClient::connect()
@@ -90,7 +91,7 @@ std::string SocketClient::receive()
     int result = WINSOCK_API_LINKAGE::recv(socket, buffer, bytes_for_package_size, 0);
 
     if(errorReceiving(result))
-        return "NULL";
+        return "";
 
     std::string messageSize(buffer, bytes_for_package_size);
     std::stringstream ss;
@@ -105,8 +106,8 @@ std::string SocketClient::receive()
         char* buff = new char[size_of_received_buffer]();
         int result = WINSOCK_API_LINKAGE::recv(socket, buff, size_of_received_buffer, 0);
 
-            if(errorReceiving(result))
-        return "NULL";
+        if(errorReceiving(result))
+            return "";
 
         message+=std::string(buff);
         delete[] buff;
@@ -118,8 +119,8 @@ std::string SocketClient::receive()
         char* buff = new char[p]();
         int result = WINSOCK_API_LINKAGE::recv(socket, buff, p, 0);
 
-            if(errorReceiving(result))
-        return "NULL";
+        if(errorReceiving(result))
+            return "";
 
         std::string str(buff, p);
         message+=str;
@@ -138,6 +139,7 @@ bool SocketClient::errorReceiving(int result)
             callbackError(&error);
 
         isConnected=false;
+        errorWhileReceiving=true;
         return true;
     }
     return false;
@@ -184,8 +186,20 @@ void SocketClient::startThread()
         if(isConnected)
         {
             std::string message = this->receive();
-            messageStruct m(*this, message);
-            callback(&m);
+            if(errorWhileReceiving && message=="")
+            {
+                errorWhileReceiving=false;
+            }
+            else
+            {
+                messageStruct m(*this, message);
+                callback(&m);
+            }
         }
     }
+}
+
+bool SocketClient::connected()
+{
+    return isConnected;
 }

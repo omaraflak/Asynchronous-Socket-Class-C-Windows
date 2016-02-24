@@ -25,6 +25,7 @@ class SocketClient
         void setErrorCallback(void (*callback_function)(errorStruct *));
         void removeMessageCallback();
         void removeErrorCallback();
+        bool connected();
 
     private:
         int port;
@@ -37,6 +38,7 @@ class SocketClient
         SOCKADDR_IN addr;
         HANDLE thread;
         bool thread_started;
+        bool errorWhileReceiving;
         void (*callback)(messageStruct *);
         void (*callbackError)(errorStruct *);
         bool errorReceiving(int result);
