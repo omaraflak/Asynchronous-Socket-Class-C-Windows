@@ -18,7 +18,7 @@ Server: https://github.com/omaflak/Asynchronous-Socket-Class-C-Windows/blob/mast
 
 Client: https://github.com/omaflak/Asynchronous-Socket-Class-C-Windows/blob/master/main_client.cpp
 
-# Compilation under Windows
+# Compilation
 
     g++ main_client.cpp -o client.exe libSocket.a "C:\path\to\lib\libws2_32.a"
     g++ main_server.cpp -o server.exe libSocket.a "C:\path\to\lib\libws2_32.a"
