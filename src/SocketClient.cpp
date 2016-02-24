@@ -87,19 +87,19 @@ void SocketClient::send(std::string message)
 std::string SocketClient::receive()
 {
     char buffer[bytes_for_package_size];
-    int result = WINSOCK_API_LINKAGE::recv(socket, buffer, sizeof(buffer), 0);
+    int result = WINSOCK_API_LINKAGE::recv(socket, buffer, bytes_for_package_size, 0);
 
     if(errorReceiving(result))
         return "NULL";
 
     std::string messageSize(buffer, bytes_for_package_size);
     std::stringstream ss;
-    ss << messageSize;
     int n;
+
+    ss << messageSize;
     ss >> n;
 
     std::string message;
-
     for (unsigned int i=0 ; i<n/size_of_received_buffer ; i++)
     {
         char* buff = new char[size_of_received_buffer]();
@@ -108,8 +108,7 @@ std::string SocketClient::receive()
             if(errorReceiving(result))
         return "NULL";
 
-        std::string str(buff, size_of_received_buffer);
-        message+=str;
+        message+=std::string(buff);
         delete[] buff;
     }
 
