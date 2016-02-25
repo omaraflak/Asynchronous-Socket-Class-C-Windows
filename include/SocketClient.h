@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
 #include <winsock2.h>
 
 struct messageStruct;
@@ -19,29 +20,31 @@ class SocketClient
         void close();
         void send(std::string message);
         std::string receive();
-        void setSize_of_received_buffer(unsigned int n);
+        void setSize_of_packages(unsigned int n);
         void setBytes_for_package_size(unsigned int n);
         void setMessageCallback(void (*callback_function)(messageStruct *));
         void setErrorCallback(void (*callback_function)(errorStruct *));
         void removeMessageCallback();
         void removeErrorCallback();
-        bool connected();
+        bool isConnected();
 
     private:
         int port;
         std::string ip;
         unsigned int bytes_for_package_size;
-        unsigned int size_of_received_buffer;
-        bool isConnected;
+        unsigned int size_of_packages;
+        bool connected;
         WSADATA WSAData;
         SOCKET socket;
         SOCKADDR_IN addr;
         HANDLE thread;
         bool thread_started;
         bool errorWhileReceiving;
+        bool errorWhileSending;
         void (*callback)(messageStruct *);
         void (*callbackError)(errorStruct *);
         bool errorReceiving(int result);
+        bool errorSending(int result);
         void initSocket(std::string ip, int port);
         void initParameters();
         void startThread();

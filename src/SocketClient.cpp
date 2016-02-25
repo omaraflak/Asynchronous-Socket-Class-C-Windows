@@ -4,7 +4,7 @@ SocketClient::SocketClient(std::string ip, int port)
 {
     this->ip=ip;
     this->port=port;
-    this->isConnected=false;
+    this->connected=false;
     initParameters();
     initSocket(ip, port);
 }
@@ -12,7 +12,7 @@ SocketClient::SocketClient(std::string ip, int port)
 SocketClient::SocketClient(SOCKET socket)
 {
     this->socket=socket;
-    this->isConnected=true;
+    this->connected=true;
     initParameters();
 }
 
@@ -29,12 +29,13 @@ void SocketClient::initSocket(std::string ip, int port)
 
 void SocketClient::initParameters()
 {
-    this->bytes_for_package_size=64;
-    this->size_of_received_buffer=2048;
+    this->bytes_for_package_size=32;
+    this->size_of_packages=2048;
     this->callback=NULL;
     this->callbackError=NULL;
     this->thread_started=false;
     this->errorWhileReceiving=false;
+    this->errorWhileSending=false;
 }
 
 int SocketClient::connect()
@@ -49,7 +50,7 @@ int SocketClient::connect()
         }
     }
     else
-        isConnected=true;
+        connected=true;
 
     return r;
 }
@@ -73,16 +74,46 @@ void SocketClient::send(std::string message)
     {
         str="0"+str;
     }
-    message=str+message;
-    int r = WINSOCK_API_LINKAGE::send(socket, message.c_str(), message.length(), 0);
-    if(r==SOCKET_ERROR)
+
+    int result, p=0;
+    std::string subMessage;
+
+    result = WINSOCK_API_LINKAGE::send(socket, str.c_str(), bytes_for_package_size, 0);
+    if(errorSending(result))
+        return;
+
+    for (unsigned int i=0 ; i<s/size_of_packages ; i++)
+    {
+        subMessage = message.substr(p, size_of_packages);
+        result = WINSOCK_API_LINKAGE::send(socket, subMessage.c_str(), size_of_packages, 0);
+        if(errorSending(result))
+            return;
+        p+=size_of_packages;
+    }
+
+    int r=s%size_of_packages;
+    if(r!=0)
+    {
+        result = WINSOCK_API_LINKAGE::send(socket, message.substr(s-r).c_str(), r, 0);
+        if(errorSending(result))
+            return;
+    }
+}
+
+bool SocketClient::errorSending(int result)
+{
+    if(result==SOCKET_ERROR)
     {
         if(callbackError!=NULL)
         {
             errorStruct error(*this, WSAGetLastError(), "Error while sending.");
             callbackError(&error);
         }
+        connected=false;
+        errorWhileSending=true;
+        return true;
     }
+    return false;
 }
 
 std::string SocketClient::receive()
@@ -101,29 +132,28 @@ std::string SocketClient::receive()
     ss >> n;
 
     std::string message;
-    for (unsigned int i=0 ; i<n/size_of_received_buffer ; i++)
+    for (unsigned int i=0 ; i<n/size_of_packages ; i++)
     {
-        char* buff = new char[size_of_received_buffer]();
-        int result = WINSOCK_API_LINKAGE::recv(socket, buff, size_of_received_buffer, 0);
+        char* buff = new char[size_of_packages]();
+        int result = WINSOCK_API_LINKAGE::recv(socket, buff, size_of_packages, 0);
 
         if(errorReceiving(result))
             return "";
 
-        message+=std::string(buff);
+        message+=std::string(buff, size_of_packages);
         delete[] buff;
     }
 
-    if(n%size_of_received_buffer!=0)
+    if(n%size_of_packages!=0)
     {
-        int p=n%size_of_received_buffer;
+        int p=n%size_of_packages;
         char* buff = new char[p]();
         int result = WINSOCK_API_LINKAGE::recv(socket, buff, p, 0);
 
         if(errorReceiving(result))
             return "";
 
-        std::string str(buff, p);
-        message+=str;
+        message+=std::string(buff, p);
         delete[] buff;
     }
 
@@ -134,20 +164,21 @@ bool SocketClient::errorReceiving(int result)
 {
     if(result==0 || result<0)
     {
-        errorStruct error(*this, WSAGetLastError(), "Receive failed.");
         if(callbackError!=NULL)
+        {
+            errorStruct error(*this, WSAGetLastError(), "Receive failed.");
             callbackError(&error);
-
-        isConnected=false;
+        }
+        connected=false;
         errorWhileReceiving=true;
         return true;
     }
     return false;
 }
 
-void SocketClient::setSize_of_received_buffer(unsigned int n)
+void SocketClient::setSize_of_packages(unsigned int n)
 {
-    this->size_of_received_buffer=n;
+    this->size_of_packages=n;
 }
 
 void SocketClient::setBytes_for_package_size(unsigned int n)
@@ -183,12 +214,16 @@ void SocketClient::startThread()
 {
     while(1)
     {
-        if(isConnected)
+        if(connected)
         {
             std::string message = this->receive();
             if(errorWhileReceiving && message=="")
             {
                 errorWhileReceiving=false;
+            }
+            else if(errorWhileSending)
+            {
+                errorWhileSending=false;
             }
             else
             {
@@ -199,7 +234,7 @@ void SocketClient::startThread()
     }
 }
 
-bool SocketClient::connected()
+bool SocketClient::isConnected()
 {
-    return isConnected;
+    return connected;
 }
