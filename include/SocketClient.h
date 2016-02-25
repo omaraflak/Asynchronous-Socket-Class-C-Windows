@@ -3,7 +3,6 @@
 
 #include <string>
 #include <sstream>
-#include <iostream>
 #include <winsock2.h>
 
 struct messageStruct;

@@ -75,6 +75,13 @@ void SocketClient::send(std::string message)
         str="0"+str;
     }
 
+    /*int result = WINSOCK_API_LINKAGE::send(socket, str.c_str(), bytes_for_package_size, 0);
+    if(errorSending(result))
+        return;
+
+    result = WINSOCK_API_LINKAGE::send(socket, message.c_str(), message.length(), 0);
+    errorSending(result);*/
+
     int result, p=0;
     std::string subMessage;
 
@@ -130,6 +137,8 @@ std::string SocketClient::receive()
 
     ss << messageSize;
     ss >> n;
+
+    Sleep(1);
 
     std::string message;
     for (unsigned int i=0 ; i<n/size_of_packages ; i++)
@@ -217,7 +226,7 @@ void SocketClient::startThread()
         if(connected)
         {
             std::string message = this->receive();
-            if(errorWhileReceiving && message=="")
+            if(errorWhileReceiving)
             {
                 errorWhileReceiving=false;
             }
