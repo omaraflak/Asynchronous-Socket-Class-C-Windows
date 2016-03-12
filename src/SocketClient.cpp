@@ -29,7 +29,7 @@ void SocketClient::initSocket(std::string ip, int port)
 
 void SocketClient::initParameters()
 {
-    this->bytes_for_package_size=32;
+    this->bytes_for_package_size=16;
     this->size_of_packages=2048;
     this->callback=NULL;
     this->callbackError=NULL;
@@ -74,13 +74,6 @@ void SocketClient::send(std::string message)
     {
         str="0"+str;
     }
-
-    /*int result = WINSOCK_API_LINKAGE::send(socket, str.c_str(), bytes_for_package_size, 0);
-    if(errorSending(result))
-        return;
-
-    result = WINSOCK_API_LINKAGE::send(socket, message.c_str(), message.length(), 0);
-    errorSending(result);*/
 
     int result, p=0;
     std::string subMessage;

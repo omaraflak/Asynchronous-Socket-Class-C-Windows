@@ -11,7 +11,6 @@ class SocketServer
         SocketServer(int port);
         SOCKET accept();
         void close();
-    protected:
     private:
         int port;
         WSADATA WSAData;
