@@ -66,35 +66,50 @@ void SocketClient::close()
 
 void SocketClient::send(std::string message)
 {
-    int s = message.length();
     std::stringstream ss;
-    ss << s;
-    std::string str = ss.str();
-    while(str.length()<bytes_for_package_size)
+    ss << message;
+    send(ss);
+}
+
+void SocketClient::send(std::istream &stream)
+{
+    char buffer[size_of_packages];
+    int streamsize, p, result;
+    std::stringstream ss;
+    std::string strSize;
+
+    stream.seekg(0, std::ios::end);
+    streamsize = stream.tellg();
+    stream.seekg(std::ios::beg);
+
+    ss << streamsize;
+    strSize = ss.str();
+
+    while(strSize.size()<bytes_for_package_size)
     {
-        str="0"+str;
+        strSize="0"+strSize;
     }
 
-    int result, p=0;
-    std::string subMessage;
-
-    result = WINSOCK_API_LINKAGE::send(socket, str.c_str(), bytes_for_package_size, 0);
+    result = WINSOCK_API_LINKAGE::send(socket, strSize.c_str(), bytes_for_package_size, 0);
     if(errorSending(result))
         return;
 
-    for (unsigned int i=0 ; i<s/size_of_packages ; i++)
+    for (unsigned int i=0 ; i<streamsize/size_of_packages ; i++)
     {
-        subMessage = message.substr(p, size_of_packages);
-        result = WINSOCK_API_LINKAGE::send(socket, subMessage.c_str(), size_of_packages, 0);
+        stream.read(buffer, size_of_packages);
+        result = WINSOCK_API_LINKAGE::send(socket, buffer, size_of_packages, 0);
         if(errorSending(result))
             return;
-        p+=size_of_packages;
+
+        memset(buffer, 0, size_of_packages);
     }
 
-    int r=s%size_of_packages;
-    if(r!=0)
+    p=streamsize%size_of_packages;
+    if(p!=0)
     {
-        result = WINSOCK_API_LINKAGE::send(socket, message.substr(s-r).c_str(), r, 0);
+        char buff[p];
+        stream.read(buff, p);
+        result = WINSOCK_API_LINKAGE::send(socket, buff, p, 0);
         if(errorSending(result))
             return;
     }

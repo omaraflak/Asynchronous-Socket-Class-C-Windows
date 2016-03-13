@@ -18,6 +18,7 @@ class SocketClient
         int connect();
         void close();
         void send(std::string message);
+        void send(std::istream &stream);
         std::string receive();
         void setSize_of_packages(unsigned int n);
         void setBytes_for_package_size(unsigned int n);
