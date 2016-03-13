@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <winsock2.h>
+#include <iostream>
 
 struct messageStruct;
 struct errorStruct;

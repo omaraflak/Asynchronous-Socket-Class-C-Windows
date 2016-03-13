@@ -149,28 +149,16 @@ std::string SocketClient::receive()
     Sleep(1);
 
     std::string message;
-    for (unsigned int i=0 ; i<n/size_of_packages ; i++)
+    unsigned int nbLoop = n%size_of_packages==0?n/size_of_packages:n/size_of_packages+1;
+    for (unsigned int i=0 ; i<nbLoop ; i++)
     {
         char* buff = new char[size_of_packages]();
-        int result = WINSOCK_API_LINKAGE::recv(socket, buff, size_of_packages, 0);
+        result = WINSOCK_API_LINKAGE::recv(socket, buff, size_of_packages, 0);
 
         if(errorReceiving(result))
             return "";
 
-        message+=std::string(buff, size_of_packages);
-        delete[] buff;
-    }
-
-    if(n%size_of_packages!=0)
-    {
-        int p=n%size_of_packages;
-        char* buff = new char[p]();
-        int result = WINSOCK_API_LINKAGE::recv(socket, buff, p, 0);
-
-        if(errorReceiving(result))
-            return "";
-
-        message+=std::string(buff, p);
+        message+=std::string(buff, result);
         delete[] buff;
     }
 
