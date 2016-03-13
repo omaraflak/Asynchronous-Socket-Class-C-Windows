@@ -26,7 +26,7 @@ int main()
     /* NEW */               //  You can now send streams this way
     
     ifstream file("/path/to/file");
-    client.send(file);      // The server will receive the string content of the file.
+    client.send(file);      // The server will receive the STRING CONTENT of the file.
                             // But I'm working on a new version to receive the whole file directly (not as a string)
     /* NEW */
     
